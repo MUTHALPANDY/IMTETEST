@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Mock Test — 100 MCQs</title>
+<style>
+  body{font-family:Arial,Helvetica,sans-serif;background:#f6f8fb;color:#222;margin:0;padding:0}
+  .container{max-width:900px;margin:28px auto;background:#fff;padding:20px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  h1{margin:0 0 12px;font-size:22px}
+  .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .meta .small{font-size:13px;color:#555}
+  #quizArea{margin-top:10px}
+  .questionCard{border:1px solid #e3e7ee;padding:14px;border-radius:6px;margin-bottom:12px;background:#fbfdff}
+  .qtext{font-weight:600;margin-bottom:8px}
+  .options label{display:block;padding:8px;border-radius:6px;border:1px solid transparent;margin-bottom:6px;cursor:pointer}
+  .options input{margin-right:8px}
+  .options label:hover{background:#eef6ff}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  button{padding:8px 12px;border-radius:6px;border:0;background:#0b6cff;color:#fff;cursor:pointer}
+  button.secondary{background:#6c757d}
+  button.ghost{background:#fff;color:#0b6cff;border:1px solid #cfe0ff}
+  .scoreBox{padding:12px;background:#f1f9ee;border:1px solid #d6efd6;border-radius:6px;margin-top:12px}
+  .review .correct{background:#e6ffea;border-left:4px solid #2ea44f;padding:8px;margin-top:6px}
+  .review .wrong{background:#fff0f0;border-left:4px solid #d73a49;padding:8px;margin-top:6px}
+  .footer{margin-top:16px;font-size:13px;color:#555}
+  .timer{font-weight:700;color:#d9534f}
+  .navGrid{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .navGrid button{min-width:36px;padding:6px 8px}
+  .hidden{display:none}
+  @media (max-width:600px){.meta{flex-direction:column;align-items:flex-start;gap:8px}}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Mock Test — 100 MCQs</h1>
+  <div class="meta">
+    <div class="small">Questions: <strong id="totalQ">100</strong> • <span id="modeLabel">Randomized</span></div>
+    <div class="small">Time: <span id="timerDisplay">No timer</span></div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="controls">
+    <button id="prevBtn" class="secondary">Previous</button>
+    <button id="nextBtn" class="secondary">Next</button>
+    <button id="submitBtn">Submit</button>
+    <button id="restartBtn" class="ghost">Restart</button>
+    <button id="printBtn" class="ghost">Print Results</button>
+    <label style="margin-left:auto;font-size:13px">
+      Timer (minutes):
+      <input id="timerInput" type="number" min="0" max="180" value="0" style="width:70px;margin-left:6px;padding:6px;border-radius:6px;border:1px solid #ccc"/>
+    </label>
+  </div>
+
+  <div id="scoreArea" class="hidden"></div>
+
+  <div class="footer">Tip: Save the file as <strong>mock_quiz.html</strong> and open in a browser. Host on GitHub Pages to share online.</div>
+</div>
+
+<script>
+/* ====== QUESTIONS ARRAY (100 MCQs) ======
+   Each item: {q: "Question text", options: ["A","B","C","D"], answer: 0..3}
+   Source: compiled from the provided MCQs.
+*/
+const QUESTIONS = [
+{"q":"What is the primary function of management that sets objectives and decides how to achieve them?","options":["Organizing","Staffing","Planning","Controlling"],"answer":2},
+{"q":"Which leadership style involves decision making by the leader without consulting subordinates?","options":["Democratic","Autocratic","Laissez‑faire","Transformational"],"answer":1},
+{"q":"Job evaluation is primarily used to determine what?","options":["Employee performance rating","Training needs","Relative worth of jobs for pay structure","Recruitment sources"],"answer":2},
+{"q":"Which of the following is a time rate wage system?","options":["Piece rate","Hourly rate","Taylor differential piece rate","Incentive bonus"],"answer":1},
+{"q":"Which is a source of long‑term capital for a company?","options":["Trade credit","Debentures","Cash credit","Overdraft"],"answer":1},
+{"q":"Which type of share carries fixed dividend and priority over equity?","options":["Equity share","Preference share","Bonus share","Right share"],"answer":1},
+{"q":"A bin card is used to record what?","options":["Supplier performance","Vehicle trips","Receipts, issues and balance of a specific inventory item","Employee attendance"],"answer":2},
+{"q":"Reorder level is the inventory quantity at which what should happen?","options":["Stock is maximum","A new order should be placed","Stock is obsolete","Stock is written off"],"answer":1},
+{"q":"Material handling includes all EXCEPT which option?","options":["Movement of materials","Storage of materials","Protection of materials","Product pricing"],"answer":3},
+{"q":"Which equipment is commonly used in a goods vehicle depot for lifting pallets?","options":["Conveyor belt","Hand trolley","Forklift truck","Crane spreader"],"answer":2},
+{"q":"A way bill is primarily a document for what?","options":["Transfer of title","Insurance claim only","Transit control and billing","Vehicle registration"],"answer":2},
+{"q":"Transhipment means what?","options":["Direct delivery to consignee","Transfer of goods from one vehicle/mode to another during transit","Issuing invoice","Customs clearance"],"answer":1},
+{"q":"CRM stands for what?","options":["Cost Recovery Mechanism","Customer Relationship Management","Cargo Routing Manual","Central Road Ministry"],"answer":1},
+{"q":"Traffic survey collects data on which aspects?","options":["Employee wages","Vehicle insurance rates","Traffic volume and origin–destination patterns","Inventory levels"],"answer":2},
+{"q":"A vehicle log sheet records all EXCEPT which item?","options":["Odometer readings","Fuel issued","Driver name","Shareholder dividends"],"answer":3},
+{"q":"A trip sheet is used to record what?","options":["Employee appraisal","Details of a single trip including revenue and distance","Inventory receipts","Insurance premium"],"answer":1},
+{"q":"Road tax is levied to fund what?","options":["Fund private companies","Pay driver salaries","Maintain roads and transport infrastructure","Issue licences only"],"answer":2},
+{"q":"Contract carriage refers to what type of service?","options":["Public stage carriage service","Transport under contract for a specific client","Free transport service","Postal carriage"],"answer":1},
+{"q":"Salesmanship primarily involves what?","options":["Manufacturing goods","Legal compliance","Persuading customers and providing after‑sales service","Inventory control"],"answer":2},
+{"q":"Running cost of a vehicle typically includes which items?","options":["Depreciation","Insurance","Fuel and routine maintenance","Interest on capital"],"answer":2},
+{"q":"Which of the following is NOT a function of a manager?","options":["Planning","Organizing","Manufacturing","Controlling"],"answer":2},
+{"q":"Which leadership style gives maximum autonomy to subordinates?","options":["Autocratic","Democratic","Laissez‑faire","Transactional"],"answer":2},
+{"q":"Job evaluation helps to establish what?","options":["Production targets","Pay equity among jobs","Marketing strategy","Route schedules"],"answer":1},
+{"q":"Piece rate wage system pays workers based on what?","options":["Hours worked","Units produced","Monthly salary","Attendance"],"answer":1},
+{"q":"Which capital resource is internal and arises from retained profits?","options":["Bank loan","Debenture","Retained earnings","Trade credit"],"answer":2},
+{"q":"Redeemable shares are what?","options":["Never repaid","Repayable after a specified period","Always bearer shares","Only preference shares"],"answer":1},
+{"q":"A bin card is maintained at which location?","options":["Head office only","Bin or storage location","Bank branch","Customer premises"],"answer":1},
+{"q":"Reorder level depends on which factors?","options":["Supplier profit margin","Lead time and consumption rate","Employee morale","Vehicle speed"],"answer":1},
+{"q":"Material handling aims to achieve what?","options":["Increase product price","Reduce employee wages","Improve efficiency in movement and storage","Replace management"],"answer":2},
+{"q":"Dock leveler is used for what purpose?","options":["Ticketing passengers","Issuing waybills","Bridging gap between vehicle floor and depot floor","Calculating depreciation"],"answer":2},
+{"q":"A consignment note is issued by whom?","options":["Bank","Consignor or forwarding agent","Traffic police","Insurance company"],"answer":1},
+{"q":"Which document is evidence of delivery to consignee?","options":["Invoice","Way bill","Delivery challan","Purchase order"],"answer":2},
+{"q":"Customer Relationship Management primarily improves what?","options":["Inventory turnover","Customer retention and service","Road maintenance","Driver scheduling"],"answer":1},
+{"q":"Traffic survey data is used for which planning tasks?","options":["Wage calculation","Route planning and frequency decisions","Issuing fitness certificates","Insurance underwriting"],"answer":1},
+{"q":"A log sheet helps to compute what metrics?","options":["Shareholder returns","Fuel efficiency and utilization","Market share","Depreciation rate"],"answer":1},
+{"q":"Trip sheet is essential for which functions?","options":["Employee recruitment","Revenue accounting and operational control","Issuing permits","Manufacturing quality control"],"answer":1},
+{"q":"Road tax is usually paid to which authority?","options":["Private insurer","Government transport authority","Depot manager","Bank only"],"answer":1},
+{"q":"Contract carriage differs from stage carriage by what?","options":["Having fixed stops only","Being hired for specific contract terms","Being free of charge","Operating only within city limits"],"answer":1},
+{"q":"Good salesmanship includes which elements?","options":["Ignoring customer needs","Overcharging customers","Product knowledge and after‑sales service","Avoiding communication"],"answer":2},
+{"q":"Which cost is variable with distance?","options":["Depreciation","Insurance","Fuel cost","Interest on loan"],"answer":2},
+{"q":"Authority and responsibility principle states what?","options":["Authority should be unlimited","Responsibility is optional","Authority must match responsibility","Responsibility should be avoided"],"answer":2},
+{"q":"Unity of command means an employee should report to how many superiors?","options":["Multiple managers","Only one superior","The board directly","Customers"],"answer":1},
+{"q":"Which incentive plan gives worker 50% of time saved as bonus?","options":["Rowan plan","Emerson plan","Halsey 50% plan","Taylor differential plan"],"answer":2},
+{"q":"Rowan plan adjusts bonus based on what ratio?","options":["Fixed percentage of output","Ratio of time allowed to time taken","Number of workers","Manager discretion"],"answer":1},
+{"q":"Emerson’s efficiency plan emphasizes what?","options":["Individual only","Group and individual incentives with efficiency bands","Fixed salary only","Punitive measures"],"answer":1},
+{"q":"Straight line depreciation charges are what each year?","options":["Increasing amounts each year","Equal amount each year","Zero depreciation","Based on sales"],"answer":1},
+{"q":"Sinking fund method requires what action annually?","options":["No investment","Annual deposit invested to accumulate replacement cost","Immediate lump sum payment only","Depreciation based on usage only"],"answer":1},
+{"q":"Diminishing balance method yields which pattern of depreciation?","options":["Equal charges each year","Higher depreciation in early years","No depreciation in first year","Depreciation based on sales"],"answer":1},
+{"q":"ABC analysis classifies items by what measure?","options":["Supplier location","Annual consumption value","Color of packaging","Date of purchase"],"answer":1},
+{"q":"A items in ABC analysis require what level of control?","options":["Minimal control","Tight control and frequent review","No records","Bulk ordering only"],"answer":1},
+{"q":"Minimum stock (safety stock) is kept to prevent what?","options":["Increase carrying cost","Stockouts during lead time variability","Reduce supplier reliability","Increase obsolescence"],"answer":1},
+{"q":"Lead time is the period between which two events?","options":["Invoice and payment","Placing an order and receiving goods","Production and sale","Hiring and firing"],"answer":1},
+{"q":"A goods forwarding note typically contains which details?","options":["Employee salary details","Description, quantity, consignor and consignee details","Road tax rates","Driver medical records"],"answer":1},
+{"q":"Which document is NOT normally used in goods transport?","options":["Consignment note","Way bill","Delivery challan","Share certificate"],"answer":3},
+{"q":"Transhipment point is used to do what?","options":["Manufacture goods","Transfer consignments between vehicles or modes","Issue driving licences","Collect road tax"],"answer":1},
+{"q":"Goods in transit insurance protects against what?","options":["Employee theft only","Loss or damage during transit","Road tax liability","Depreciation"],"answer":1},
+{"q":"Third‑party motor insurance covers what liability?","options":["Own vehicle damage only","Liability to third parties for injury or property damage","Goods in transit only","Driver wages"],"answer":1},
+{"q":"Vehicle fitness certificate certifies what?","options":["Ownership transfer","Roadworthiness and compliance with safety standards","Insurance premium paid","Driver competence"],"answer":1},
+{"q":"Which vehicles typically require fitness certificates?","options":["Private bicycles","Commercial buses and goods carriers","Hand carts","Pedestrian trolleys"],"answer":1},
+{"q":"National permit allows goods vehicles to operate where?","options":["Only within one city","Across state boundaries under national rules","Only for private use","Only for passenger transport"],"answer":1},
+{"q":"Composite permit generally refers to what?","options":["Single‑state permit only","Combined authorization covering multiple operations or states","Driver licence type","Insurance policy"],"answer":1},
+{"q":"Sub‑contracting in transport means what?","options":["Owner drives the vehicle always","Hiring another operator to perform part of the service","Selling vehicles to customers","Issuing waybills"],"answer":1},
+{"q":"A major demerit of sub‑contracting is what?","options":["Lower flexibility","No need for contracts","Reduced control over service quality","Increased capital investment"],"answer":2},
+{"q":"Relief service in passenger transport ensures what?","options":["No maintenance required","Substitute staff or vehicles for breaks and absences","Free tickets for passengers","Permanent driver assignment only"],"answer":1},
+{"q":"Fare per passenger‑km is computed by dividing total cost by what?","options":["Number of vehicles","Total passenger‑km expected","Number of drivers","Road tax amount"],"answer":1},
+{"q":"Operating cost excludes which item?","options":["Fuel","Routine maintenance","Depreciation (capital charge)","Driver wages (if variable)"],"answer":2},
+{"q":"Fixed cost in transport includes which items?","options":["Fuel","Depreciation and insurance","Tires","Routine repairs"],"answer":1},
+{"q":"Variable cost per km decreases when what happens?","options":["Fuel price rises","Vehicle utilization increases (more km spread fixed costs)","Maintenance frequency increases","Driver wages increase per trip"],"answer":1},
+{"q":"A log sheet is primarily used by whom?","options":["Customers","Depot and maintenance staff","Insurance companies only","Tax authorities only"],"answer":1},
+{"q":"Trip sheet differs from log sheet because it records what?","options":["Inventory levels","Trip revenue and passenger/goods details","Employee salaries","Shareholder meetings"],"answer":1},
+{"q":"Which is a method of wage payment that rewards output above a standard?","options":["Time rate only","Incentive plans (piece rate, bonus)","Fixed salary only","Reimbursement"],"answer":1},
+{"q":"Esprit de corps refers to what?","options":["Financial accounting method","Team spirit and unity among employees","A type of permit","A depreciation method"],"answer":1},
+{"q":"Which is NOT a component of wages?","options":["Basic wage","Dearness allowance","House rent allowance","Depreciation"],"answer":3},
+{"q":"Public deposit is defined as what?","options":["Share capital only","Funds accepted by a company from the public repayable with interest","Bank overdraft","Trade credit"],"answer":1},
+{"q":"Which document is required for cross‑border goods movement?","options":["Trip sheet","Customs documents","Bin card","Log sheet"],"answer":1},
+{"q":"Which is a primary benefit of training?","options":["Increased inventory","Improved employee productivity and reduced errors","Higher road tax","Reduced vehicle capacity"],"answer":1},
+{"q":"Causes of depreciation include all EXCEPT which factor?","options":["Wear and tear","Obsolescence","Inadequate maintenance","Increase in market demand"],"answer":3},
+{"q":"Which is a material handling equipment for small consignments?","options":["Forklift truck","Reach stacker","Hand trolley","Container spreader"],"answer":2},
+{"q":"Weighbridge in a depot is used to do what?","options":["Issue licences","Weigh consignments and vehicles for billing and safety","Train drivers","Store spare parts"],"answer":1},
+{"q":"Which is a short‑term source of working capital?","options":["Equity shares","Trade credit","Debentures","Fixed deposits"],"answer":1},
+{"q":"Working capital requirement increases with which conditions?","options":["Shorter production cycle","Longer production cycle and liberal credit policy","Lower inventory levels","Faster receivables collection"],"answer":1},
+{"q":"EOQ (Economic Order Quantity) minimizes what?","options":["Production time","Total inventory cost (ordering + carrying)","Lead time only","Supplier count"],"answer":1},
+{"q":"Which is NOT part of inventory carrying cost?","options":["Insurance","Storage rent","Sales commission","Obsolescence"],"answer":2},
+{"q":"Goods vehicle depot layout should ensure what?","options":["Random parking","Clear traffic flow and separate loading/unloading areas","No workshop area","No security gate"],"answer":1},
+{"q":"A garage inspection pit is used for what?","options":["Ticketing passengers","Underbody maintenance and inspection","Issuing waybills","Storing invoices"],"answer":1},
+{"q":"Which document proves ownership of goods?","options":["Way bill","Invoice or bill of lading (depending on mode)","Trip sheet","Log sheet"],"answer":1},
+{"q":"Which is a cautionary road signal?","options":["Stop sign (mandatory)","Sharp bend ahead (warning)","No entry (prohibitory)","Speed limit (mandatory)"],"answer":1},
+{"q":"Express service in passenger transport is characterized by what?","options":["Stopping at all stops","Very few or no intermediate stops for faster travel","Lowest fare always","Only night operation"],"answer":1},
+{"q":"Limited stop service differs from express service by what?","options":["Being slower than local service","Stopping at selected major stops only","Stopping at every stop","Operating only on weekends"],"answer":1},
+{"q":"Consumer survey techniques include all EXCEPT which item?","options":["Questionnaires","Focus groups","Vehicle log sheets","Interviews"],"answer":2},
+{"q":"Which is a key element of professional ethics for engineers?","options":["Maximizing profit only","Ensuring public safety and honesty","Avoiding documentation","Ignoring regulations"],"answer":1},
+{"q":"Courage as a value means what?","options":["Avoiding responsibility","Acting rightly despite fear or risk","Always agreeing with majority","Hiding mistakes"],"answer":1},
+{"q":"Core quality of a professional practitioner includes what?","options":["Ignoring clients","Technical competence and accountability","Avoiding learning","Unreliability"],"answer":1},
+{"q":"Human values include all EXCEPT which option?","options":["Honesty","Respect","Compassion","Obsolescence"],"answer":3},
+{"q":"Market research primary method is what?","options":["Industry reports only","Surveys and interviews","Trip sheets","Way bills"],"answer":1},
+{"q":"Which is a method to control transport costs?","options":["Increasing empty runs","Preventive maintenance and route optimization","Ignoring fuel consumption","Reducing driver training"],"answer":1},
+{"q":"Driver duty schedule ensures what?","options":["No rest breaks ever","Compliance with legal hours and coverage of shifts","Random driver assignment","No record keeping"],"answer":1},
+{"q":"Which is included in depot administrative setup?","options":["Only drivers","Operations, maintenance, commercial, HR and finance departments","Only finance department","Only marketing"],"answer":1},
+{"q":"Which is a benefit of ABC inventory control?","options":["Equal control for all items","Focus on high‑value items to reduce carrying cost","Eliminates need for records","Increases stockouts for A items"],"answer":1},
+{"q":"Which documents are used to claim insurance for damaged goods in transit?","options":["Trip sheet only","Consignment note, delivery challan, surveyor’s report and claim form","Way bill only","Bin card only"],"answer":1}
+];
+
+/* ====== QUIZ LOGIC ====== */
+let questions = [];
+let currentIndex = 0;
+let answers = []; // store selected index or null
+let timerId = null;
+let timeRemaining = 0;
+
+const totalQ = QUESTIONS.length;
+document.getElementById('totalQ').textContent = totalQ;
+
+function shuffleArray(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+}
+
+function startQuiz(){
+  // clone and randomize questions and options
+  questions = JSON.parse(JSON.stringify(QUESTIONS));
+  shuffleArray(questions);
+  questions.forEach(q=>{
+    // shuffle options but keep track of correct index
+    const correctText = q.options[q.answer];
+    shuffleArray(q.options);
+    q.answer = q.options.indexOf(correctText);
+  });
+  answers = Array(questions.length).fill(null);
+  currentIndex = 0;
+  renderQuestion();
+  document.getElementById('scoreArea').classList.add('hidden');
+  document.getElementById('quizArea').classList.remove('hidden');
+  document.getElementById('modeLabel').textContent = 'Randomized';
+  // timer
+  const tmin = parseInt(document.getElementById('timerInput').value || "0",10);
+  if(timerId) { clearInterval(timerId); timerId=null; }
+  if(tmin>0){
+    timeRemaining = tmin*60;
+    document.getElementById('timerDisplay').textContent = formatTime(timeRemaining);
+    timerId = setInterval(()=>{
+      timeRemaining--;
+      document.getElementById('timerDisplay').textContent = formatTime(timeRemaining);
+      if(timeRemaining<=0){ clearInterval(timerId); timerId=null; submitQuiz(); }
+    },1000);
+  } else {
+    document.getElementById('timerDisplay').textContent = 'No timer';
+  }
+}
+
+function formatTime(sec){
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+function renderQuestion(){
+  const q = questions[currentIndex];
+  const area = document.getElementById('quizArea');
+  area.innerHTML = '';
+  const card = document.createElement('div'); card.className='questionCard';
+  const qnum = document.createElement('div'); qnum.className='qtext'; qnum.textContent = `Q${currentIndex+1}. ${q.q}`;
+  card.appendChild(qnum);
+  const opts = document.createElement('div'); opts.className='options';
+  q.options.forEach((opt,i)=>{
+    const id = `q${currentIndex}_opt${i}`;
+    const label = document.createElement('label');
+    label.htmlFor = id;
+    const radio = document.createElement('input');
+    radio.type='radio'; radio.name='opt'; radio.id=id; radio.value=i;
+    if(answers[currentIndex]===i) radio.checked=true;
+    radio.addEventListener('change',()=>{ answers[currentIndex]=i; });
+    label.appendChild(radio);
+    label.appendChild(document.createTextNode(opt));
+    opts.appendChild(label);
+  });
+  card.appendChild(opts);
+
+  // navigation grid
+  const nav = document.createElement('div'); nav.className='navGrid';
+  for(let i=0;i<questions.length;i++){
+    const btn = document.createElement('button');
+    btn.textContent = i+1;
+    btn.className = (answers[i]===null)?'secondary':'';
+    btn.addEventListener('click',()=>{ currentIndex=i; renderQuestion(); });
+    nav.appendChild(btn);
+    if(i>=19) break; // show first 20 quick buttons to avoid huge UI
+  }
+  card.appendChild(nav);
+
+  area.appendChild(card);
+  // update prev/next button states
+  document.getElementById('prevBtn').disabled = (currentIndex===0);
+  document.getElementById('nextBtn').disabled = (currentIndex===questions.length-1);
+}
+
+function goNext(){ if(currentIndex<questions.length-1){ currentIndex++; renderQuestion(); } }
+function goPrev(){ if(currentIndex>0){ currentIndex--; renderQuestion(); } }
+
+function submitQuiz(){
+  if(timerId){ clearInterval(timerId); timerId=null; }
+  // compute score
+  let score=0;
+  const review = [];
+  for(let i=0;i<questions.length;i++){
+    const sel = answers[i];
+    const correct = questions[i].answer;
+    if(sel===correct) score++;
+    review.push({q:questions[i].q, options:questions[i].options, selected:sel, correct});
+  }
+  showScore(score, review);
+}
+
+function showScore(score, review){
+  const area = document.getElementById('scoreArea');
+  area.classList.remove('hidden');
+  area.innerHTML = '';
+  const box = document.createElement('div'); box.className='scoreBox';
+  box.innerHTML = `<strong>Score:</strong> ${score} / ${questions.length} &nbsp; (${Math.round(score/questions.length*100)}%)`;
+  area.appendChild(box);
+
+  const revDiv = document.createElement('div'); revDiv.className='review';
+  review.forEach((r,i)=>{
+    const qd = document.createElement('div'); qd.style.marginTop='10px';
+    qd.innerHTML = `<div style="font-weight:600">Q${i+1}. ${r.q}</div>`;
+    r.options.forEach((opt,idx)=>{
+      const p = document.createElement('div');
+      p.style.padding='6px';
+      if(idx===r.correct){ p.className='correct'; p.textContent = `Correct: ${opt}`; }
+      if(r.selected!==null && idx===r.selected && idx!==r.correct){ p.className='wrong'; p.textContent = `Your answer: ${opt}`; }
+      if(r.selected===null && idx!==r.correct){ /* nothing */ }
+      qd.appendChild(p);
+    });
+    revDiv.appendChild(qd);
+  });
+  area.appendChild(revDiv);
+  // hide quiz area
+  document.getElementById('quizArea').classList.add('hidden');
+}
+
+document.getElementById('nextBtn').addEventListener('click',goNext);
+document.getElementById('prevBtn').addEventListener('click',goPrev);
+document.getElementById('submitBtn').addEventListener('click',submitQuiz);
+document.getElementById('restartBtn').addEventListener('click',startQuiz);
+document.getElementById('printBtn').addEventListener('click',()=>{ window.print(); });
+
+/* initialize */
+startQuiz();
+</script>
+</body>
+</html>
